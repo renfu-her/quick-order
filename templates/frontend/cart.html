@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}购物车 - Quick Orders{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">购物车</h1>
+        
+        {% if cart.cart_items.count() > 0 %}
+        <div class="row">
+            <div class="col-md-8">
+                <!-- 购物车商品列表 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">购物车商品</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for item in cart.cart_items %}
+                        <div class="cart-item d-flex align-items-center py-3 border-bottom">
+                            <div class="flex-shrink-0 me-3">
+                                {% set active_images = item.product.images | selectattr('is_active') | list %}
+                                {% if active_images %}
+                                <img src="/static/uploads/{{ active_images[0].image }}" 
+                                     alt="{{ item.product.name }}" 
+                                     class="rounded" 
+                                     style="width: 80px; height: 80px; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                     style="width: 80px; height: 80px;">
+                                    <i class="fas fa-image text-muted"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="flex-grow-1 me-3">
+                                <h6 class="mb-1">{{ item.product.name }}</h6>
+                                <p class="text-muted mb-1 small">
+                                    {% if item.temperature == 'cold' %}
+                                        冷饮
+                                    {% elif item.temperature == 'hot' %}
+                                        热饮
+                                    {% else %}
+                                        常温
+                                    {% endif %}
+                                </p>
+                                {% if item.ingredients %}
+                                <p class="text-muted mb-0 small">
+                                    配料: {{ item.ingredients | map(attribute='name') | join(', ') }}
+                                </p>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="flex-shrink-0 me-3">
+                                <div class="input-group" style="width: 120px;">
+                                    <button class="btn btn-outline-secondary btn-sm" 
+                                            type="button" 
+                                            onclick="updateCartItem({{ item.id }}, {{ item.quantity - 1 }})">
+                                        -
+                                    </button>
+                                    <input type="number" 
+                                           class="form-control form-control-sm text-center" 
+                                           value="{{ item.quantity }}" 
+                                           min="1" 
+                                           max="10"
+                                           onchange="updateCartItem({{ item.id }}, this.value)">
+                                    <button class="btn btn-outline-secondary btn-sm" 
+                                            type="button" 
+                                            onclick="updateCartItem({{ item.id }}, {{ item.quantity + 1 }})">
+                                        +
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="flex-shrink-0 me-3">
+                                <span class="fw-bold">NTD{{ "%.2f"|format(item.line_total) }}</span>
+                            </div>
+                            
+                            <div class="flex-shrink-0">
+                                <button class="btn btn-outline-danger btn-sm" 
+                                        onclick="removeCartItem({{ item.id }})"
+                                        title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <!-- 订单摘要 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">订单摘要</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>商品总数:</span>
+                            <span>{{ cart.cart_items.count() }} 件</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>总金额:</span>
+                            <span class="fw-bold text-primary">NTD{{ "%.2f"|format(cart.total_amount) }}</span>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('frontend.checkout') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-credit-card"></i> 去结算
+                            </a>
+                            <a href="{{ url_for('frontend.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> 继续购物
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        <!-- 空购物车 -->
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
+            <h3 class="text-muted">购物车为空</h3>
+            <p class="text-muted mb-4">您还没有添加任何商品到购物车</p>
+            <a href="{{ url_for('frontend.index') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-shopping-bag"></i> 去购物
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateCartItem(itemId, newQuantity) {
+    if (newQuantity < 1 || newQuantity > 10) return;
+    
+    fetch('/api/cart/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            item_id: itemId,
+            quantity: newQuantity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload(); // 简单刷新页面
+        } else {
+            alert('更新失败: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('更新失败，请重试');
+    });
+}
+
+function removeCartItem(itemId) {
+    if (confirm('确定要删除这个商品吗？')) {
+        fetch('/api/cart/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                item_id: itemId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload(); // 简单刷新页面
+            } else {
+                alert('删除失败: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('删除失败，请重试');
+        });
+    }
+}
+</script>
+{% endblock %}

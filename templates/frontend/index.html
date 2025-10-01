@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}首頁 - Quick Orders{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">歡迎來到 Quick Orders</h1>
+        <p class="lead">快速點餐，美味直達</p>
+    </div>
+</div>
+
+<div class="row">
+    {% for product in products %}
+    <div class="col-md-4 col-lg-3 mb-4">
+        <div class="card product-card h-100">
+            {% set active_images = product.images | selectattr('is_active') | list %}
+            {% if active_images %}
+            <img src="/static/uploads/{{ active_images[0].image }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+            {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                <i class="fas fa-image text-muted fa-3x"></i>
+            </div>
+            {% endif %}
+            
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text text-muted small">{{ product.description or '暫無描述' }}</p>
+                
+                <div class="mt-auto">
+                    <div class="mb-2">
+                        <span class="h5 text-primary">NTD{{ "%.2f"|format(product.price) }}</span>
+                        {% if product.special_price > 0 %}
+                        <small class="text-muted ms-2">特價: NTD{{ "%.2f"|format(product.special_price) }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="btn-group w-100" role="group">
+                        <a href="{{ url_for('frontend.product_detail', product_id=product.id) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye"></i> 查看詳情
+                        </a>
+                        <button class="btn btn-primary btn-sm" onclick="addToCart({{ product.id }})">
+                            <i class="fas fa-cart-plus"></i> 加入購物車
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    {% if not products %}
+    <div class="col-12 text-center py-5">
+        <i class="fas fa-coffee fa-3x text-muted mb-3"></i>
+        <h3 class="text-muted">暫無產品</h3>
+        <p class="text-muted">請稍後再來查看</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function addToCart(productId) {
+    fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: 1,
+            temperature: 'normal'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 顯示成功消息
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            alert.style.top = '20px';
+            alert.style.right = '20px';
+            alert.style.zIndex = '9999';
+            alert.innerHTML = `
+                ${data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            
+            // 更新購物車數量
+            updateCartCount();
+            
+            // 3秒後自動移除提示
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 3000);
+        } else {
+            alert('添加失敗: ' + (data.message || '未知錯誤'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('添加失敗，請稍後重試');
+    });
+}
+</script>
+{% endblock %}
