@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}訂單管理 - Quick Orders{% endblock %}
+{% block title %}訂單管�? - Quick Orders{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1 class="mb-4">訂單管理</h1>
+        <h1 class="mb-4">訂單管�?</h1>
         
         {% if orders %}
         <div class="card">
@@ -14,12 +14,12 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>訂單號</th>
+                                <th>訂單??/th>
                                 <th>客戶</th>
-                                <th>金額</th>
-                                <th>狀態</th>
-                                <th>下單時間</th>
-                                <th>操作</th>
+                                <th>?��?</th>
+                                <th>?�??/th>
+                                <th>下單?��?</th>
+                                <th>?��?</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -37,19 +37,19 @@
                                         {% elif order.status == 'completed' %}bg-success
                                         {% elif order.status == 'cancelled' %}bg-danger
                                         {% endif %}">
-                                        {% if order.status == 'pending' %}待確認
-                                        {% elif order.status == 'confirmed' %}已確認
-                                        {% elif order.status == 'preparing' %}製作中
-                                        {% elif order.status == 'ready' %}待取餐
-                                        {% elif order.status == 'completed' %}已完成
-                                        {% elif order.status == 'cancelled' %}已取消
+                                        {% if order.status == 'pending' %}待確�?
+                                        {% elif order.status == 'confirmed' %}已確�?
+                                        {% elif order.status == 'preparing' %}製�?�?
+                                        {% elif order.status == 'ready' %}待�?�?
+                                        {% elif order.status == 'completed' %}已�???
+                                        {% elif order.status == 'cancelled' %}已�?�?
                                         {% endif %}
                                     </span>
                                 </td>
                                 <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                                 <td>
                                     <a href="{{ url_for('backend.order_detail', order_id=order.id) }}" 
-                                       class="btn btn-sm btn-outline-primary">查看詳情</a>
+                                       class="btn btn-sm btn-outline-primary">?��?詳�?</a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -62,10 +62,11 @@
         {% else %}
         <div class="text-center py-5">
             <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
-            <h3 class="text-muted">暫無訂單</h3>
-            <p class="text-muted">還沒有任何訂單</p>
+            <h3 class="text-muted">?�無訂單</h3>
+            <p class="text-muted">?��??�任何�???/p>
         </div>
         {% endif %}
     </div>
 </div>
 {% endblock %}
+

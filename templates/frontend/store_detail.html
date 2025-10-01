@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}{{ store.name }} - Quick Orders{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        {% set banners = store.images | selectattr('is_active') | sort(attribute='sort') | list %}
+        {% if banners %}
+        <div id="storeBannerCarousel{{ store.id }}" class="carousel slide mb-4" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% for banner in banners %}
+                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    <img src="/static/uploads/{{ banner.image }}" class="d-block w-100 rounded" alt="{{ store.name }} banner {{ loop.index }}" style="height: 320px; object-fit: cover;">
+                </div>
+                {% endfor %}
+            </div>
+            {% if banners|length > 1 %}
+            <button class="carousel-control-prev" type="button" data-bs-target="#storeBannerCarousel{{ store.id }}" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#storeBannerCarousel{{ store.id }}" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="card h-100">
+            <div class="card-header bg-white border-0 pb-0 d-flex justify-content-between align-items-center">
+                <h2 class="h4 mb-0">{{ store.name }}</h2>
+                <a href="{{ url_for('frontend.index') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> 返回首頁
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="mb-4 text-muted">
+                    {% if store.description %}
+                    <p class="mb-2">{{ store.description }}</p>
+                    {% endif %}
+                    <ul class="list-unstyled small mb-0">
+                        {% if store.address %}
+                        <li class="mb-1"><i class="fas fa-map-marker-alt me-2"></i>{{ store.address }}</li>
+                        {% endif %}
+                        {% if store.phone %}
+                        <li class="mb-1"><i class="fas fa-phone me-2"></i>{{ store.phone }}</li>
+                        {% endif %}
+                        {% if store.work_time %}
+                        <li class="mb-1"><i class="fas fa-clock me-2"></i>{{ store.work_time }}</li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                {% set product = store.product if store.product and store.product.is_active else None %}
+                {% if product %}
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-5">
+                        {% set active_images = product.images | selectattr('is_active') | list %}
+                        {% if active_images %}
+                        <img src="/static/uploads/{{ active_images[0].image }}" class="img-fluid rounded" alt="{{ product.name }}" style="max-height: 240px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 240px;">
+                            <i class="fas fa-image text-muted fa-3x"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-7">
+                        <h3 class="h5">{{ product.name }}</h3>
+                        <p class="text-muted">{{ product.description or '尚無描述' }}</p>
+                        <div class="mb-3">
+                            <span class="h4 text-primary">NTD{{ "%.2f"|format(product.price) }}</span>
+                            {% if product.special_price > 0 %}
+                            <small class="text-muted ms-2">特價: NTD{{ "%.2f"|format(product.special_price) }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ url_for('frontend.product_detail', product_id=product.id) }}" class="btn btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i> 查看商品詳情
+                            </a>
+                            <button class="btn btn-primary" onclick="addToCart({{ product.id }})">
+                                <i class="fas fa-cart-plus me-1"></i> 加入購物車
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-box-open me-2"></i> 此門市尚未上架商品，敬請期待。
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-white border-0">
+                <h3 class="h5 mb-0">門市資訊</h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-4">
+                    <li class="mb-3">
+                        <strong>門市狀態：</strong>
+                        {% if store.is_active %}
+                        <span class="badge bg-success">營業中</span>
+                        {% else %}
+                        <span class="badge bg-secondary">休息</span>
+                        {% endif %}
+                    </li>
+                    {% if store.address %}
+                    <li class="mb-3">
+                        <strong>地址：</strong>
+                        <div class="text-muted">{{ store.address }}</div>
+                    </li>
+                    {% endif %}
+                    {% if store.phone %}
+                    <li class="mb-3">
+                        <strong>電話：</strong>
+                        <div class="text-muted">{{ store.phone }}</div>
+                    </li>
+                    {% endif %}
+                    {% if store.work_time %}
+                    <li class="mb-0">
+                        <strong>營業時間：</strong>
+                        <div class="text-muted">{{ store.work_time }}</div>
+                    </li>
+                    {% endif %}
+                </ul>
+                <a href="{{ url_for('frontend.index') }}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-arrow-left me-1"></i> 返回首頁
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function addToCart(productId) {
+    fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: 1,
+            temperature: 'normal'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            alert.style.top = '20px';
+            alert.style.right = '20px';
+            alert.style.zIndex = '9999';
+            alert.innerHTML = `
+                ${data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+
+            if (typeof updateCartCount === 'function') {
+                updateCartCount();
+            }
+
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 3000);
+        } else {
+            alert('添加失敗: ' + (data.message || '未知錯誤'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('添加失敗，請稍後再試');
+    });
+}
+</script>
+{% endblock %}

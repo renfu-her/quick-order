@@ -6,17 +6,29 @@ from models import User, Product, Cart, CartItem, Order, OrderItem, Store
 frontend_bp = Blueprint('frontend', __name__)
 
 @frontend_bp.route('/')
-
 def index():
-    "首頁"
+    """首頁"""
     from sqlalchemy.orm import joinedload
 
     stores = Store.query.options(
-        joinedload(Store.product).joinedload(Product.images)
+        joinedload(Store.product).joinedload(Product.images),
+        joinedload(Store.images)
     ).filter_by(is_active=True).order_by(Store.name).all()
 
     return render_template('frontend/index.html', stores=stores)
 
+
+@frontend_bp.route('/store/<int:store_id>')
+def store_detail(store_id):
+    """門市詳情"""
+    from sqlalchemy.orm import joinedload
+
+    store = Store.query.options(
+        joinedload(Store.images),
+        joinedload(Store.product).joinedload(Product.images)
+    ).filter_by(id=store_id, is_active=True).first_or_404()
+
+    return render_template('frontend/store_detail.html', store=store)
 
 @frontend_bp.route('/product/<int:product_id>')
 def product_detail(product_id):
