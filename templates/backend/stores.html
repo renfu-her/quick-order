@@ -1,18 +1,18 @@
 ﻿{% extends "base.html" %}
 
-{% block title %}摨蝞∠? - Quick Orders{% endblock %}
+{% block title %}店鋪管理 - Quick Orders{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
             <h1 class="mb-0">店鋪管理</h1>
             <div class="d-flex gap-2">
                 <a href="{{ url_for('backend.dashboard') }}" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left"></i> 返回
                 </a>
                 <a href="{{ url_for('backend.create_store') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> 添??店鋪
+                    <i class="fas fa-plus"></i> 新增店鋪
                 </a>
             </div>
         </div>
@@ -25,13 +25,13 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>摨?迂</th>
-                                <th>???</th>
-                                <th>?啣?</th>
-                                <th>?餉店</th>
-                                <th>?平??</th>
-                                <th>???/th>
-                                <th>??</th>
+                                <th>店鋪名稱</th>
+                                <th>關聯商品</th>
+                                <th>地址</th>
+                                <th>聯絡電話</th>
+                                <th>營業時間</th>
+                                <th>狀態</th>
+                                <th>操作</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -43,10 +43,10 @@
                                     {% if store.product %}
                                     <div>{{ store.product.name }} <span class="text-muted small">#{{ store.product.id }}</span></div>
                                     {% if not store.product.is_active %}
-                                    <span class="badge bg-warning text-dark mt-1">???</span>
+                                    <span class="badge bg-warning text-dark mt-1">商品已停用</span>
                                     {% endif %}
                                     {% else %}
-                                    <span class="text-muted">?芣?瘣?/span>
+                                    <span class="text-muted">未關聯商品</span>
                                     {% endif %}
                                 </td>
                                 <td>{{ store.address or '-' }}</td>
@@ -54,18 +54,18 @@
                                 <td>{{ store.work_time or '-' }}</td>
                                 <td>
                                     {% if store.is_active %}
-                                    <span class="badge bg-success">?</span>
+                                    <span class="badge bg-success">啟用</span>
                                     {% else %}
-                                    <span class="badge bg-secondary">蝳</span>
+                                    <span class="badge bg-secondary">停用</span>
                                     {% endif %}
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ url_for('backend.edit_store', store_id=store.id) }}" 
-                                           class="btn btn-outline-primary">蝺刻摩</a>
+                                           class="btn btn-outline-primary">編輯</a>
                                         <button class="btn btn-outline-danger" 
                                                 onclick="toggleStoreStatus({{ store.id }}, {{ store.is_active|lower }})">
-                                            {{ '蝳' if store.is_active else '?' }}
+                                            {{ '停用' if store.is_active else '啟用' }}
                                         </button>
                                     </div>
                                 </td>
@@ -80,10 +80,10 @@
         {% else %}
         <div class="text-center py-5">
             <i class="fas fa-store fa-5x text-muted mb-4"></i>
-            <h3 class="text-muted">?怎摨</h3>
-            <p class="text-muted mb-4">???溶?遙雿???/p>
+            <h3 class="text-muted">暫無店鋪</h3>
+            <p class="text-muted mb-4">尚未有任何店鋪。</p>
             <a href="{{ url_for('backend.create_store') }}" class="btn btn-primary btn-lg">
-                <i class="fas fa-plus"></i> 瘛餃?蝚砌?????
+                <i class="fas fa-plus"></i> 立即新增第一個店鋪
             </a>
         </div>
         {% endif %}
@@ -94,8 +94,8 @@
 {% block extra_js %}
 <script>
 function toggleStoreStatus(storeId, isActive) {
-    const action = isActive ? '蝳' : '?';
-    if (confirm(`蝣箏?閬?{action}???芸?嚗)) {
+    const action = isActive ? '停用' : '啟用';
+    if (confirm(`確定要${action}這個店鋪嗎？`)) {
         fetch('/api/admin/stores/' + storeId + '/toggle-status', {
             method: 'POST',
             headers: {
@@ -107,15 +107,14 @@ function toggleStoreStatus(storeId, isActive) {
             if (data.status === 'success') {
                 location.reload();
             } else {
-                alert('??憭望?: ' + data.message);
+                alert('操作失敗: ' + data.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('??憭望?嚗??岫');
+            alert('操作失敗，請稍後再試');
         });
     }
 }
 </script>
 {% endblock %}
-

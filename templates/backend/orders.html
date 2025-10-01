@@ -1,20 +1,16 @@
 ﻿{% extends "base.html" %}
 
-{% block title %}閮蝞∠? - Quick Orders{% endblock %}
+{% block title %}訂單管理 - Quick Orders{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-            <h1 class="mb-0">訂單管理</h1>
-            <div class="d-flex gap-2">
-                <a href="{{ url_for('backend.dashboard') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left"></i> 返回
-                </a>
-            </div>
-        </div>
-
-
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+            <h1 class="mb-0">訂單管理</h1>
+            <a href="{{ url_for('backend.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回
+            </a>
+        </div>
         
         {% if orders %}
         <div class="card">
@@ -23,12 +19,12 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>閮??/th>
-                                <th>摰Ｘ</th>
-                                <th>??</th>
-                                <th>???/th>
-                                <th>銝??</th>
-                                <th>??</th>
+                                <th>訂單號</th>
+                                <th>客戶</th>
+                                <th>金額</th>
+                                <th>狀態</th>
+                                <th>建立時間</th>
+                                <th>操作</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -46,19 +42,19 @@
                                         {% elif order.status == 'completed' %}bg-success
                                         {% elif order.status == 'cancelled' %}bg-danger
                                         {% endif %}">
-                                        {% if order.status == 'pending' %}敺Ⅱ隤?
-                                        {% elif order.status == 'confirmed' %}撌脩Ⅱ隤?
-                                        {% elif order.status == 'preparing' %}鋆賭?銝?
-                                        {% elif order.status == 'ready' %}敺?擗?
-                                        {% elif order.status == 'completed' %}撌脣???
-                                        {% elif order.status == 'cancelled' %}撌脣?瘨?
+                                        {% if order.status == 'pending' %}待確認
+                                        {% elif order.status == 'confirmed' %}已確認
+                                        {% elif order.status == 'preparing' %}製作中
+                                        {% elif order.status == 'ready' %}待取餐
+                                        {% elif order.status == 'completed' %}已完成
+                                        {% elif order.status == 'cancelled' %}已取消
                                         {% endif %}
                                     </span>
                                 </td>
                                 <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                                 <td>
                                     <a href="{{ url_for('backend.order_detail', order_id=order.id) }}" 
-                                       class="btn btn-sm btn-outline-primary">?亦?閰單?</a>
+                                       class="btn btn-sm btn-outline-primary">查看詳情</a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -71,11 +67,10 @@
         {% else %}
         <div class="text-center py-5">
             <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
-            <h3 class="text-muted">?怎閮</h3>
-            <p class="text-muted">???遙雿???/p>
+            <h3 class="text-muted">暫無訂單</h3>
+            <p class="text-muted">尚未有任何訂單。</p>
         </div>
         {% endif %}
     </div>
 </div>
 {% endblock %}
-
