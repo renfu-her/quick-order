@@ -1,18 +1,22 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import login_required, current_user, login_user, logout_user
 from database import db
-from models import User, Product, Cart, CartItem, Order, OrderItem
+from models import User, Product, Cart, CartItem, Order, OrderItem, Store
 
 frontend_bp = Blueprint('frontend', __name__)
 
 @frontend_bp.route('/')
+
 def index():
-    """首頁"""
+    "首頁"
     from sqlalchemy.orm import joinedload
-    products = Product.query.options(
-        joinedload(Product.images)
-    ).filter_by(is_active=True).all()
-    return render_template('frontend/index.html', products=products)
+
+    stores = Store.query.options(
+        joinedload(Store.product).joinedload(Product.images)
+    ).filter_by(is_active=True).order_by(Store.name).all()
+
+    return render_template('frontend/index.html', stores=stores)
+
 
 @frontend_bp.route('/product/<int:product_id>')
 def product_detail(product_id):

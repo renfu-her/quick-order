@@ -11,47 +11,67 @@
             </div>
             <div class="card-body">
                 <form method="POST">
+                    {% set selected_id = selected_product_id|int if selected_product_id else None %}
+
                     <div class="mb-3">
                         <label for="name" class="form-label">店鋪名稱 *</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ request.form.get('name', '') }}" required>
                     </div>
-                    
+
+                    <div class="mb-3">
+                        <label for="product_id" class="form-label">關聯商品 *</label>
+                        {% if products %}
+                        <select class="form-select" id="product_id" name="product_id" required>
+                            <option value="" disabled {% if selected_id is none %}selected{% endif %}>請選擇商品</option>
+                            {% for product in products %}
+                            <option value="{{ product.id }}" {% if selected_id is not none and product.id == selected_id %}selected{% endif %}>
+                                {{ product.name }}{% if not product.is_active %}（已停用）{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% else %}
+                        <div class="alert alert-warning mb-0">
+                            尚無可用商品，請先建立商品後再新增店鋪。
+                        </div>
+                        {% endif %}
+                    </div>
+
                     <div class="mb-3">
                         <label for="description" class="form-label">店鋪描述</label>
-                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ request.form.get('description', '') }}</textarea>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="address" class="form-label">地址</label>
-                            <input type="text" class="form-control" id="address" name="address">
+                            <input type="text" class="form-control" id="address" name="address" value="{{ request.form.get('address', '') }}">
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label for="phone" class="form-label">電話</label>
-                            <input type="tel" class="form-control" id="phone" name="phone">
+                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ request.form.get('phone', '') }}">
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="work_time" class="form-label">營業時間</label>
-                        <input type="text" class="form-control" id="work_time" name="work_time" placeholder="例如: 9:00-21:00">
+                        <input type="text" class="form-control" id="work_time" name="work_time" value="{{ request.form.get('work_time', '') }}" placeholder="例如: 9:00-21:00">
                     </div>
-                    
+
                     <div class="mb-3">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" checked>
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if request.method != 'POST' or request.form.get('is_active') %}checked{% endif %}>
                             <label class="form-check-label" for="is_active">
                                 啟用店鋪
                             </label>
                         </div>
                     </div>
-                    
+
                     <div class="d-flex justify-content-between">
                         <a href="{{ url_for('backend.stores') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> 返回
                         </a>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary" {% if not products %}disabled{% endif %}>
                             <i class="fas fa-save"></i> 保存店鋪
                         </button>
                     </div>

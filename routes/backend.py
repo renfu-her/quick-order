@@ -139,54 +139,95 @@ def users():
 @backend_bp.route('/stores')
 def stores():
     """店鋪管理"""
-    stores = Store.query.all()
+    from sqlalchemy.orm import joinedload
+
+    stores = Store.query.options(joinedload(Store.product)).all()
     return render_template('backend/stores.html', stores=stores)
 
 @backend_bp.route('/stores/create', methods=['GET', 'POST'])
 def create_store():
-    """創建店鋪"""
+    """建立店鋪"""
+    products = Product.query.filter_by(is_active=True).order_by(Product.name).all()
+    selected_product_id = None
+
     if request.method == 'POST':
-        name = request.form.get('name')
-        description = request.form.get('description')
-        work_time = request.form.get('work_time')
-        address = request.form.get('address')
-        phone = request.form.get('phone')
-        
+        selected_product_id = request.form.get('product_id')
+        try:
+            product_id = int(selected_product_id)
+        except (TypeError, ValueError):
+            product_id = None
+
+        if not product_id:
+            flash('請先選擇商品', 'error')
+            return render_template('backend/create_store.html', products=products, selected_product_id=selected_product_id)
+
+        if not any(product.id == product_id for product in products):
+            flash('選擇的商品不存在或已停用', 'error')
+            return render_template('backend/create_store.html', products=products, selected_product_id=selected_product_id)
+
         store = Store(
-            name=name,
-            description=description,
-            work_time=work_time,
-            address=address,
-            phone=phone
+            product_id=product_id,
+            name=request.form.get('name'),
+            description=request.form.get('description'),
+            work_time=request.form.get('work_time'),
+            address=request.form.get('address'),
+            phone=request.form.get('phone'),
+            is_active=bool(request.form.get('is_active'))
         )
-        
+
         db.session.add(store)
         db.session.commit()
-        
-        flash('店鋪創建成功', 'success')
+
+        flash('店鋪建立成功', 'success')
         return redirect(url_for('backend.stores'))
-    
-    return render_template('backend/create_store.html')
+
+    return render_template('backend/create_store.html', products=products, selected_product_id=selected_product_id)
+
 
 @backend_bp.route('/stores/<int:store_id>/edit', methods=['GET', 'POST'])
 def edit_store(store_id):
     """編輯店鋪"""
     store = Store.query.get_or_404(store_id)
-    
+    products = Product.query.filter_by(is_active=True).order_by(Product.name).all()
+
+    if store.product and not store.product.is_active and store.product not in products:
+        products.append(store.product)
+        products.sort(key=lambda product: product.name)
+
+    selected_product_id = str(store.product_id) if store.product_id else None
+
     if request.method == 'POST':
+        selected_product_id = request.form.get('product_id')
+        try:
+            product_id = int(selected_product_id)
+        except (TypeError, ValueError):
+            product_id = None
+
+        if not product_id:
+            flash('請先選擇商品', 'error')
+            return render_template('backend/edit_store.html', store=store, products=products, selected_product_id=selected_product_id)
+
+        if product_id != store.product_id:
+            product = Product.query.get(product_id)
+            if not product or not product.is_active:
+                flash('選擇的商品不存在或已停用', 'error')
+                return render_template('backend/edit_store.html', store=store, products=products, selected_product_id=selected_product_id)
+            store.product_id = product.id
+
         store.name = request.form.get('name')
         store.description = request.form.get('description')
         store.work_time = request.form.get('work_time')
         store.address = request.form.get('address')
         store.phone = request.form.get('phone')
         store.is_active = bool(request.form.get('is_active'))
-        
+
         db.session.commit()
-        
+
         flash('店鋪更新成功', 'success')
         return redirect(url_for('backend.stores'))
-    
-    return render_template('backend/edit_store.html', store=store)
+
+    return render_template('backend/edit_store.html', store=store, products=products, selected_product_id=selected_product_id)
+
 
 @backend_bp.route('/login', methods=['GET', 'POST'])
 def login():

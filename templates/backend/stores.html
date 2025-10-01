@@ -21,6 +21,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>店鋪名稱</th>
+                                <th>關聯商品</th>
                                 <th>地址</th>
                                 <th>電話</th>
                                 <th>營業時間</th>
@@ -33,6 +34,16 @@
                             <tr>
                                 <td>{{ store.id }}</td>
                                 <td>{{ store.name }}</td>
+                                <td>
+                                    {% if store.product %}
+                                    <div>{{ store.product.name }} <span class="text-muted small">#{{ store.product.id }}</span></div>
+                                    {% if not store.product.is_active %}
+                                    <span class="badge bg-warning text-dark mt-1">商品停用</span>
+                                    {% endif %}
+                                    {% else %}
+                                    <span class="text-muted">未指派</span>
+                                    {% endif %}
+                                </td>
                                 <td>{{ store.address or '-' }}</td>
                                 <td>{{ store.phone or '-' }}</td>
                                 <td>{{ store.work_time or '-' }}</td>
