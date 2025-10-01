@@ -7,24 +7,52 @@
     <div class="col-lg-8">
         {% set banners = store.images | selectattr('is_active') | sort(attribute='sort') | list %}
         {% if banners %}
-        <div id="storeBannerCarousel{{ store.id }}" class="carousel slide mb-4" data-bs-ride="carousel">
-            <div class="carousel-inner">
+        <div id="storeBannerCarousel" class="carousel slide mb-4" data-bs-ride="carousel" data-bs-interval="3000">
+            <!-- 指示器 -->
+            {% if banners|length > 1 %}
+            <div class="carousel-indicators">
+                {% for banner in banners %}
+                <button type="button" data-bs-target="#storeBannerCarousel" data-bs-slide-to="{{ loop.index0 }}" 
+                        {% if loop.first %}class="active" aria-current="true"{% endif %} 
+                        aria-label="Slide {{ loop.index }}"></button>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- 輪播內容 -->
+            <div class="carousel-inner rounded">
                 {% for banner in banners %}
                 <div class="carousel-item {% if loop.first %}active{% endif %}">
-                    <img src="/static/uploads/{{ banner.image }}" class="d-block w-100 rounded" alt="{{ store.name }} banner {{ loop.index }}" style="height: 320px; object-fit: cover;">
+                    <img src="/static/uploads/{{ banner.image }}" 
+                         class="d-block w-100" 
+                         alt="{{ store.name }} - 圖片 {{ loop.index }}" 
+                         style="height: 400px; object-fit: cover;">
+                    <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded px-3 py-2">
+                        <h5 class="mb-0">{{ store.name }}</h5>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
+            
+            <!-- 控制按鈕 -->
             {% if banners|length > 1 %}
-            <button class="carousel-control-prev" type="button" data-bs-target="#storeBannerCarousel{{ store.id }}" data-bs-slide="prev">
+            <button class="carousel-control-prev" type="button" data-bs-target="#storeBannerCarousel" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
+                <span class="visually-hidden">上一張</span>
             </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#storeBannerCarousel{{ store.id }}" data-bs-slide="next">
+            <button class="carousel-control-next" type="button" data-bs-target="#storeBannerCarousel" data-bs-slide="next">
                 <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
+                <span class="visually-hidden">下一張</span>
             </button>
             {% endif %}
+        </div>
+        {% else %}
+        <!-- 沒有圖片時顯示預設 banner -->
+        <div class="bg-light rounded mb-4 d-flex align-items-center justify-content-center" style="height: 400px;">
+            <div class="text-center">
+                <i class="fas fa-store fa-5x text-muted mb-3"></i>
+                <h4 class="text-muted">{{ store.name }}</h4>
+            </div>
         </div>
         {% endif %}
 
@@ -53,8 +81,9 @@
                     </ul>
                 </div>
 
-                {% set product = store.product if store.product and store.product.is_active else None %}
-                {% if product %}
+                {% set active_products = store.products | selectattr('is_active') | list %}
+                {% if active_products %}
+                {% for product in active_products %}
                 <div class="row g-3 align-items-center">
                     <div class="col-md-5">
                         {% set active_images = product.images | selectattr('is_active') | list %}
@@ -85,6 +114,8 @@
                         </div>
                     </div>
                 </div>
+                <hr class="my-4">
+                {% endfor %}
                 {% else %}
                 <div class="alert alert-info mb-0">
                     <i class="fas fa-box-open me-2"></i> 此門市尚未上架商品，敬請期待。

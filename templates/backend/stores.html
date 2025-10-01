@@ -40,11 +40,15 @@
                                 <td>{{ store.id }}</td>
                                 <td>{{ store.name }}</td>
                                 <td>
-                                    {% if store.product %}
-                                    <div>{{ store.product.name }} <span class="text-muted small">#{{ store.product.id }}</span></div>
-                                    {% if not store.product.is_active %}
-                                    <span class="badge bg-warning text-dark mt-1">商品已停用</span>
-                                    {% endif %}
+                                    {% if store.products %}
+                                        {% for product in store.products %}
+                                        <div class="mb-1">
+                                            <span class="badge bg-primary">{{ product.name }}</span>
+                                            {% if not product.is_active %}
+                                            <span class="badge bg-warning text-dark">已停用</span>
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
                                     {% else %}
                                     <span class="text-muted">未關聯商品</span>
                                     {% endif %}

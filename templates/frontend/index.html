@@ -37,7 +37,8 @@
                 {% endif %}
             </div>
             <div class="card-body d-flex flex-column">
-                {% set product = store.product if store.product and store.product.is_active else None %}
+                {% set active_products = store.products | selectattr('is_active') | list %}
+                {% set product = active_products[0] if active_products else None %}
                 {% if product %}
                 {% set active_images = product.images | selectattr('is_active') | list %}
                 {% if active_images %}

@@ -209,3 +209,102 @@ def get_or_create_cart():
             db.session.commit()
     
     return cart
+
+# 管理員 API
+@api_bp.route('/admin/products/images/<int:image_id>/delete', methods=['POST'])
+@login_required
+def delete_product_image(image_id):
+    """刪除商品圖片"""
+    if not current_user.is_admin:
+        return jsonify({'status': 'error', 'message': '無權限'}), 403
+    
+    from models import ProductImage
+    from utils.image_utils import delete_product_image as delete_img
+    
+    image = ProductImage.query.get_or_404(image_id)
+    image_path = image.image
+    
+    db.session.delete(image)
+    db.session.commit()
+    
+    # 刪除實體文件
+    delete_img(image_path)
+    
+    return jsonify({'status': 'success', 'message': '圖片已刪除'})
+
+@api_bp.route('/admin/stores/images/<int:image_id>/delete', methods=['POST'])
+@login_required
+def delete_store_image(image_id):
+    """刪除店鋪圖片"""
+    if not current_user.is_admin:
+        return jsonify({'status': 'error', 'message': '無權限'}), 403
+    
+    from models import StoreImage
+    from utils.image_utils import delete_store_image as delete_img
+    
+    image = StoreImage.query.get_or_404(image_id)
+    image_path = image.image
+    
+    db.session.delete(image)
+    db.session.commit()
+    
+    # 刪除實體文件
+    delete_img(image_path)
+    
+    return jsonify({'status': 'success', 'message': 'Banner 圖片已刪除'})
+
+@api_bp.route('/admin/products/<int:product_id>/toggle-status', methods=['POST'])
+@login_required
+def toggle_product_status(product_id):
+    """切換商品狀態"""
+    if not current_user.is_admin:
+        return jsonify({'status': 'error', 'message': '無權限'}), 403
+    
+    product = Product.query.get_or_404(product_id)
+    product.is_active = not product.is_active
+    db.session.commit()
+    
+    return jsonify({'status': 'success', 'is_active': product.is_active})
+
+@api_bp.route('/admin/stores/<int:store_id>/toggle-status', methods=['POST'])
+@login_required
+def toggle_store_status(store_id):
+    """切換店鋪狀態"""
+    if not current_user.is_admin:
+        return jsonify({'status': 'error', 'message': '無權限'}), 403
+    
+    from models import Store
+    store = Store.query.get_or_404(store_id)
+    store.is_active = not store.is_active
+    db.session.commit()
+    
+    return jsonify({'status': 'success', 'is_active': store.is_active})
+
+@api_bp.route('/admin/users/<int:user_id>/toggle-status', methods=['POST'])
+@login_required
+def toggle_user_status(user_id):
+    """切換用戶狀態"""
+    if not current_user.is_admin:
+        return jsonify({'status': 'error', 'message': '無權限'}), 403
+    
+    user = User.query.get_or_404(user_id)
+    user.is_active = not user.is_active
+    db.session.commit()
+    
+    return jsonify({'status': 'success', 'is_active': user.is_active})
+
+@api_bp.route('/admin/orders/<int:order_id>/status', methods=['POST'])
+@login_required
+def update_order_status(order_id):
+    """更新訂單狀態"""
+    if not current_user.is_admin:
+        return jsonify({'status': 'error', 'message': '無權限'}), 403
+    
+    data = request.get_json()
+    new_status = data.get('status')
+    
+    order = Order.query.get_or_404(order_id)
+    order.status = new_status
+    db.session.commit()
+    
+    return jsonify({'status': 'success', 'order_status': order.status})

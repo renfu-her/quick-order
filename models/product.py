@@ -20,9 +20,9 @@ class Product(db.Model):
     # 關聯關係
     images = db.relationship('ProductImage', backref='product', lazy='select', cascade='all, delete-orphan')
     ingredients = db.relationship('ProductIngredient', backref='product', lazy='select', cascade='all, delete-orphan')
-    stores = db.relationship('Store', backref='product', lazy='dynamic')
     order_items = db.relationship('OrderItem', backref='product', lazy='dynamic')
     cart_items = db.relationship('CartItem', backref='product', lazy='dynamic')
+    # stores relationship 在 Store 模型中定義
     
     def get_price(self, temperature='normal'):
         """根據溫度獲取價格"""

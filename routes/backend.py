@@ -1,7 +1,7 @@
 ﻿from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from database import db
-from models import User, Product, ProductImage, ProductIngredient, Order, Store
+from models import User, Product, ProductImage, ProductIngredient, Order, Store, StoreImage
 
 backend_bp = Blueprint('backend', __name__)
 
@@ -49,24 +49,43 @@ def create_product():
     if request.method == 'POST':
         name = request.form.get('name')
         price = request.form.get('price')
-        special_price = request.form.get('special_price', 0)
-        cold_price = request.form.get('cold_price', 0)
-        hot_price = request.form.get('hot_price', 0)
+        special_price = request.form.get('special_price') or 0
+        cold_price = request.form.get('cold_price') or 0
+        hot_price = request.form.get('hot_price') or 0
         description = request.form.get('description')
+        is_active = bool(request.form.get('is_active'))
         
         product = Product(
             name=name,
-            price=price,
-            special_price=special_price,
-            cold_price=cold_price,
-            hot_price=hot_price,
-            description=description
+            price=float(price) if price else 0,
+            special_price=float(special_price) if special_price else 0,
+            cold_price=float(cold_price) if cold_price else 0,
+            hot_price=float(hot_price) if hot_price else 0,
+            description=description,
+            is_active=is_active
         )
         
         db.session.add(product)
         db.session.commit()
         
-        flash('Operation completed', 'success')
+        # 處理圖片上傳
+        from utils.image_utils import save_product_image
+        images = request.files.getlist('images')
+        if images:
+            for idx, image_file in enumerate(images):
+                if image_file and image_file.filename:
+                    image_path = save_product_image(image_file, product.id)
+                    if image_path:
+                        product_image = ProductImage(
+                            product_id=product.id,
+                            image=image_path,
+                            sort=idx,
+                            is_active=True
+                        )
+                        db.session.add(product_image)
+            db.session.commit()
+        
+        flash('商品創建成功', 'success')
         return redirect(url_for('backend.products'))
     
     return render_template('backend/create_product.html')
@@ -78,16 +97,40 @@ def edit_product(product_id):
     
     if request.method == 'POST':
         product.name = request.form.get('name')
-        product.price = request.form.get('price')
-        product.special_price = request.form.get('special_price', 0)
-        product.cold_price = request.form.get('cold_price', 0)
-        product.hot_price = request.form.get('hot_price', 0)
+        price = request.form.get('price')
+        special_price = request.form.get('special_price') or 0
+        cold_price = request.form.get('cold_price') or 0
+        hot_price = request.form.get('hot_price') or 0
+        
+        product.price = float(price) if price else 0
+        product.special_price = float(special_price) if special_price else 0
+        product.cold_price = float(cold_price) if cold_price else 0
+        product.hot_price = float(hot_price) if hot_price else 0
         product.description = request.form.get('description')
         product.is_active = bool(request.form.get('is_active'))
         
+        # 處理新上傳的圖片
+        from utils.image_utils import save_product_image
+        images = request.files.getlist('images')
+        if images:
+            # 獲取當前最大排序號
+            max_sort = db.session.query(db.func.max(ProductImage.sort)).filter_by(product_id=product.id).scalar() or 0
+            
+            for idx, image_file in enumerate(images):
+                if image_file and image_file.filename:
+                    image_path = save_product_image(image_file, product.id)
+                    if image_path:
+                        product_image = ProductImage(
+                            product_id=product.id,
+                            image=image_path,
+                            sort=max_sort + idx + 1,
+                            is_active=True
+                        )
+                        db.session.add(product_image)
+        
         db.session.commit()
         
-        flash('Operation completed', 'success')
+        flash('商品更新成功', 'success')
         return redirect(url_for('backend.products'))
     
     return render_template('backend/edit_product.html', product=product)
@@ -197,32 +240,24 @@ def stores():
     
     from sqlalchemy.orm import joinedload
 
-    stores = Store.query.options(joinedload(Store.product)).all()
+    stores = Store.query.options(joinedload(Store.products)).all()
     return render_template('backend/stores.html', stores=stores)
 
 @backend_bp.route('/stores/create', methods=['GET', 'POST'])
 def create_store():
     
     products = Product.query.filter_by(is_active=True).order_by(Product.name).all()
-    selected_product_id = None
+    selected_product_ids = []
 
     if request.method == 'POST':
-        selected_product_id = request.form.get('product_id')
-        try:
-            product_id = int(selected_product_id)
-        except (TypeError, ValueError):
-            product_id = None
-
-        if not product_id:
-            flash('Operation failed', 'error')
-            return render_template('backend/create_store.html', products=products, selected_product_id=selected_product_id)
-
-        if not any(product.id == product_id for product in products):
-            flash('Operation failed', 'error')
-            return render_template('backend/create_store.html', products=products, selected_product_id=selected_product_id)
+        # 獲取多個選中的產品 ID
+        selected_product_ids = request.form.getlist('product_ids')
+        
+        if not selected_product_ids:
+            flash('請至少選擇一個商品', 'error')
+            return render_template('backend/create_store.html', products=products, selected_product_ids=selected_product_ids)
 
         store = Store(
-            product_id=product_id,
             name=request.form.get('name'),
             description=request.form.get('description'),
             work_time=request.form.get('work_time'),
@@ -232,12 +267,36 @@ def create_store():
         )
 
         db.session.add(store)
+        db.session.flush()  # 獲取 store.id
+        
+        # 關聯選中的商品
+        for product_id in selected_product_ids:
+            product = Product.query.get(int(product_id))
+            if product:
+                store.products.append(product)
+        
+        # 處理店鋪圖片上傳
+        from utils.image_utils import save_store_image
+        images = request.files.getlist('images')
+        if images:
+            for idx, image_file in enumerate(images):
+                if image_file and image_file.filename:
+                    image_path = save_store_image(image_file, store.id)
+                    if image_path:
+                        store_image = StoreImage(
+                            store_id=store.id,
+                            image=image_path,
+                            sort=idx,
+                            is_active=True
+                        )
+                        db.session.add(store_image)
+        
         db.session.commit()
 
-        flash('Operation completed', 'success')
+        flash('店鋪創建成功', 'success')
         return redirect(url_for('backend.stores'))
 
-    return render_template('backend/create_store.html', products=products, selected_product_id=selected_product_id)
+    return render_template('backend/create_store.html', products=products, selected_product_ids=selected_product_ids)
 
 
 @backend_bp.route('/stores/<int:store_id>/edit', methods=['GET', 'POST'])
@@ -246,30 +305,18 @@ def edit_store(store_id):
     store = Store.query.get_or_404(store_id)
     products = Product.query.filter_by(is_active=True).order_by(Product.name).all()
 
-    if store.product and not store.product.is_active and store.product not in products:
-        products.append(store.product)
-        products.sort(key=lambda product: product.name)
-
-    selected_product_id = str(store.product_id) if store.product_id else None
+    # 獲取當前店鋪已關聯的商品 ID 列表
+    selected_product_ids = [str(p.id) for p in store.products]
 
     if request.method == 'POST':
-        selected_product_id = request.form.get('product_id')
-        try:
-            product_id = int(selected_product_id)
-        except (TypeError, ValueError):
-            product_id = None
+        # 獲取新選擇的商品 ID 列表
+        new_product_ids = request.form.getlist('product_ids')
+        
+        if not new_product_ids:
+            flash('請至少選擇一個商品', 'error')
+            return render_template('backend/edit_store.html', store=store, products=products, selected_product_ids=selected_product_ids)
 
-        if not product_id:
-            flash('Operation failed', 'error')
-            return render_template('backend/edit_store.html', store=store, products=products, selected_product_id=selected_product_id)
-
-        if product_id != store.product_id:
-            product = Product.query.get(product_id)
-            if not product or not product.is_active:
-                flash('Operation failed', 'error')
-                return render_template('backend/edit_store.html', store=store, products=products, selected_product_id=selected_product_id)
-            store.product_id = product.id
-
+        # 更新店鋪基本信息
         store.name = request.form.get('name')
         store.description = request.form.get('description')
         store.work_time = request.form.get('work_time')
@@ -277,12 +324,38 @@ def edit_store(store_id):
         store.phone = request.form.get('phone')
         store.is_active = bool(request.form.get('is_active'))
 
+        # 更新商品關聯
+        store.products = []  # 清空現有關聯
+        for product_id in new_product_ids:
+            product = Product.query.get(int(product_id))
+            if product:
+                store.products.append(product)
+
+        # 處理新上傳的店鋪圖片
+        from utils.image_utils import save_store_image
+        images = request.files.getlist('images')
+        if images:
+            # 獲取當前最大排序號
+            max_sort = db.session.query(db.func.max(StoreImage.sort)).filter_by(store_id=store.id).scalar() or 0
+            
+            for idx, image_file in enumerate(images):
+                if image_file and image_file.filename:
+                    image_path = save_store_image(image_file, store.id)
+                    if image_path:
+                        store_image = StoreImage(
+                            store_id=store.id,
+                            image=image_path,
+                            sort=max_sort + idx + 1,
+                            is_active=True
+                        )
+                        db.session.add(store_image)
+
         db.session.commit()
 
-        flash('Operation completed', 'success')
+        flash('店鋪更新成功', 'success')
         return redirect(url_for('backend.stores'))
 
-    return render_template('backend/edit_store.html', store=store, products=products, selected_product_id=selected_product_id)
+    return render_template('backend/edit_store.html', store=store, products=products, selected_product_ids=selected_product_ids)
 
 
 @backend_bp.route('/login', methods=['GET', 'POST'])

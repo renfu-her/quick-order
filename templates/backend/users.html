@@ -28,6 +28,7 @@
                                 <th>姓名</th>
                                 <th>電子信箱</th>
                                 <th>電話</th>
+                                <th>角色</th>
                                 <th>狀態</th>
                                 <th>註冊時間</th>
                                 <th class="text-end">操作</th>
@@ -37,9 +38,21 @@
                             {% for user in users %}
                             <tr>
                                 <td>{{ user.id }}</td>
-                                <td>{{ user.name }}</td>
+                                <td>
+                                    {{ user.name }}
+                                    {% if user.is_admin %}
+                                    <i class="fas fa-crown text-warning ms-1" title="管理員"></i>
+                                    {% endif %}
+                                </td>
                                 <td>{{ user.email }}</td>
                                 <td>{{ user.phone or '-' }}</td>
+                                <td>
+                                    {% if user.is_admin %}
+                                    <span class="badge bg-danger">管理員</span>
+                                    {% else %}
+                                    <span class="badge bg-info">一般用戶</span>
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if user.is_active %}
                                     <span class="badge bg-success">啟用</span>

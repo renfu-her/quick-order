@@ -11,7 +11,7 @@ def index():
     from sqlalchemy.orm import joinedload
 
     stores = Store.query.options(
-        joinedload(Store.product).joinedload(Product.images),
+        joinedload(Store.products).joinedload(Product.images),
         joinedload(Store.images)
     ).filter_by(is_active=True).order_by(Store.name).all()
 
@@ -25,7 +25,7 @@ def store_detail(store_id):
 
     store = Store.query.options(
         joinedload(Store.images),
-        joinedload(Store.product).joinedload(Product.images)
+        joinedload(Store.products).joinedload(Product.images)
     ).filter_by(id=store_id, is_active=True).first_or_404()
 
     return render_template('frontend/store_detail.html', store=store)
