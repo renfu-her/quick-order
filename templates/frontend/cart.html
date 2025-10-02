@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}购物车 - Quick Orders{% endblock %}
+{% block title %}購物車 - Quick Orders{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1 class="mb-4">购物车</h1>
+        <h1 class="mb-4">購物車</h1>
         
         {% if cart.cart_items.count() > 0 %}
         <div class="row">
             <div class="col-md-8">
-                <!-- 购物车商品列表 -->
+                <!-- 購物車商品列表 -->
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">购物车商品</h5>
+                        <h5 class="mb-0">購物車商品</h5>
                     </div>
                     <div class="card-body">
                         {% for item in cart.cart_items %}
@@ -37,11 +37,11 @@
                                 <h6 class="mb-1">{{ item.product.name }}</h6>
                                 <p class="text-muted mb-1 small">
                                     {% if item.temperature == 'cold' %}
-                                        冷饮
+                                        冷飲
                                     {% elif item.temperature == 'hot' %}
-                                        热饮
+                                        熱飲
                                     {% else %}
-                                        常温
+                                        常溫
                                     {% endif %}
                                 </p>
                                 {% if item.ingredients %}
@@ -73,13 +73,13 @@
                             </div>
                             
                             <div class="flex-shrink-0 me-3">
-                                <span class="fw-bold">NTD{{ "%.2f"|format(item.line_total) }}</span>
+                                <span class="fw-bold">NTD{{ "%.0f"|format(item.line_total) }}</span>
                             </div>
                             
                             <div class="flex-shrink-0">
                                 <button class="btn btn-outline-danger btn-sm" 
                                         onclick="removeCartItem({{ item.id }})"
-                                        title="删除">
+                                        title="刪除">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -90,27 +90,27 @@
             </div>
             
             <div class="col-md-4">
-                <!-- 订单摘要 -->
+                <!-- 訂單摘要 -->
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">订单摘要</h5>
+                        <h5 class="mb-0">訂單摘要</h5>
                     </div>
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
-                            <span>商品总数:</span>
+                            <span>商品總數:</span>
                             <span>{{ cart.cart_items.count() }} 件</span>
                         </div>
                         <div class="d-flex justify-content-between mb-3">
-                            <span>总金额:</span>
-                            <span class="fw-bold text-primary">NTD{{ "%.2f"|format(cart.total_amount) }}</span>
+                            <span>總金額:</span>
+                            <span class="fw-bold text-primary">NTD{{ "%.0f"|format(cart.total_amount) }}</span>
                         </div>
                         
                         <div class="d-grid gap-2">
                             <a href="{{ url_for('frontend.checkout') }}" class="btn btn-primary btn-lg">
-                                <i class="fas fa-credit-card"></i> 去结算
+                                <i class="fas fa-credit-card"></i> 去結算
                             </a>
                             <a href="{{ url_for('frontend.index') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left"></i> 继续购物
+                                <i class="fas fa-arrow-left"></i> 繼續購物
                             </a>
                         </div>
                     </div>
@@ -119,13 +119,13 @@
         </div>
         
         {% else %}
-        <!-- 空购物车 -->
+        <!-- 空購物車 -->
         <div class="text-center py-5">
             <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
-            <h3 class="text-muted">购物车为空</h3>
-            <p class="text-muted mb-4">您还没有添加任何商品到购物车</p>
+            <h3 class="text-muted">購物車為空</h3>
+            <p class="text-muted mb-4">您還沒有添加任何商品到購物車</p>
             <a href="{{ url_for('frontend.index') }}" class="btn btn-primary btn-lg">
-                <i class="fas fa-shopping-bag"></i> 去购物
+                <i class="fas fa-shopping-bag"></i> 去購物
             </a>
         </div>
         {% endif %}
@@ -151,19 +151,19 @@ function updateCartItem(itemId, newQuantity) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
-            location.reload(); // 简单刷新页面
+            location.reload(); // 重新整理頁面
         } else {
-            alert('更新失败: ' + data.message);
+            alert('更新失敗: ' + data.message);
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('更新失败，请重试');
+        alert('更新失敗，請重試');
     });
 }
 
 function removeCartItem(itemId) {
-    if (confirm('确定要删除这个商品吗？')) {
+    if (confirm('確定要刪除這個商品嗎？')) {
         fetch('/api/cart/remove', {
             method: 'POST',
             headers: {
@@ -176,14 +176,14 @@ function removeCartItem(itemId) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                location.reload(); // 简单刷新页面
+                location.reload(); // 重新整理頁面
             } else {
-                alert('删除失败: ' + data.message);
+                alert('刪除失敗: ' + data.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('删除失败，请重试');
+            alert('刪除失敗，請重試');
         });
     }
 }

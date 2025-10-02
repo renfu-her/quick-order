@@ -128,9 +128,17 @@ def create_order():
         customer_email = request.form.get('customer_email')
         payment_method = request.form.get('payment_method')
         notes = request.form.get('notes')
+        delivery_address = request.form.get('delivery_address')
         
         if not customer_name or not customer_phone:
             return jsonify({'status': 'error', 'message': '請填寫姓名和手機號'}), 400
+        
+        # 如果用戶已登入，更新用戶資料
+        if current_user.is_authenticated:
+            if customer_phone:
+                current_user.phone = customer_phone
+            if delivery_address:
+                current_user.address = delivery_address
         
         # 創建訂單
         order = Order(
@@ -151,9 +159,10 @@ def create_order():
             order_item = OrderItem(
                 order_id=order.id,
                 product_id=cart_item.product_id,
+                product_name=cart_item.product.name,
+                product_price=cart_item.unit_price,
                 quantity=cart_item.quantity,
                 temperature=cart_item.temperature,
-                unit_price=cart_item.unit_price,
                 line_total=cart_item.line_total
             )
             db.session.add(order_item)

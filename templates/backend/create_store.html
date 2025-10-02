@@ -30,7 +30,7 @@
                                     {% if not product.is_active %}
                                     <span class="badge bg-warning text-dark ms-2">已停用</span>
                                     {% endif %}
-                                    <small class="text-muted d-block">價格: NTD{{ "%.2f"|format(product.price) }}</small>
+                                    <small class="text-muted d-block">價格: NTD{{ "%.0f"|format(product.price) }}</small>
                                 </label>
                             </div>
                             {% endfor %}

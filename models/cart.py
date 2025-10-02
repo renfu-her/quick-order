@@ -34,6 +34,16 @@ class Cart(db.Model):
                     total += ingredient_price * item.quantity
         return total
     
+    @property
+    def total_items(self):
+        """購物車總項目數（屬性形式）"""
+        return self.get_total_items()
+    
+    @property
+    def total_amount(self):
+        """購物車總金額（屬性形式）"""
+        return self.get_total_amount()
+    
     def clear(self):
         """清空購物車"""
         for item in self.cart_items:
@@ -68,6 +78,21 @@ class CartItem(db.Model):
                 total += ingredient_price * self.quantity
         
         return total
+    
+    @property
+    def line_total(self):
+        """項目總價格（屬性形式）"""
+        return self.get_total_price()
+    
+    @property
+    def unit_price(self):
+        """單價（含配料）"""
+        base_price = self.product.get_price(self.temperature)
+        ingredient_price = 0
+        if self.ingredients:
+            for ingredient in self.ingredients:
+                ingredient_price += float(ingredient.get('price', 0))
+        return base_price + ingredient_price
     
     def set_ingredients(self, ingredients_list):
         """設置配料"""

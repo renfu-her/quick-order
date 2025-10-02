@@ -53,10 +53,10 @@
                                     {% endif %}
                                 </td>
                                 <td>{{ product.name }}</td>
-                                <td>NTD{{ "%.2f"|format(product.price) }}</td>
+                                <td>NTD{{ "%.0f"|format(product.price) }}</td>
                                 <td>
                                     {% if product.special_price > 0 %}
-                                    NTD{{ "%.2f"|format(product.special_price) }}
+                                    NTD{{ "%.0f"|format(product.special_price) }}
                                     {% else %}
                                     -
                                     {% endif %}

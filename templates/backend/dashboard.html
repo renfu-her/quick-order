@@ -108,7 +108,7 @@
                                     <tr>
                                         <td>{{ order.order_number }}</td>
                                         <td>{{ order.customer_name }}</td>
-                                        <td>NTD{{ "%.2f"|format(order.total_amount) }}</td>
+                                        <td>NTD{{ "%.0f"|format(order.total_amount) }}</td>
                                         <td>
                                             <span class="badge 
                                                 {% if order.status == 'pending' %}bg-warning

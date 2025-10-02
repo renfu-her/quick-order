@@ -56,7 +56,7 @@
                             </div>
                             
                             <div class="flex-shrink-0">
-                                <span class="fw-bold">NTD{{ "%.2f"|format(item.line_total) }}</span>
+                                <span class="fw-bold">NTD{{ "%.0f"|format(item.line_total) }}</span>
                             </div>
                         </div>
                         {% endfor %}
@@ -108,18 +108,18 @@
                         {% if order.notes %}
                         <div class="mb-3">
                             <strong>備註:</strong><br>
-                            {{ order.notes }}
+                            {{ order.notes or '' }}
                         </div>
                         {% endif %}
                         
                         <div class="mb-3">
                             <strong>總金額:</strong><br>
-                            <span class="h4 text-primary">NTD{{ "%.2f"|format(order.total_amount) }}</span>
+                            <span class="h4 text-primary">NTD{{ "%.0f"|format(order.total_amount) }}</span>
                         </div>
                         
                         <div class="mb-3">
                             <strong>時間:</strong><br>
-                            下单時間: {{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}<br>
+                            下單時間: {{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}<br>
                             更新時間: {{ order.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}
                         </div>
                         

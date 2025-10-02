@@ -1,45 +1,45 @@
 {% extends "base.html" %}
 
-{% block title %}登录 - Quick Orders{% endblock %}
+{% block title %}登入 - Quick Orders{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-4">
         <div class="card">
             <div class="card-header text-center">
-                <h4 class="mb-0">用户登录</h4>
+                <h4 class="mb-0">用戶登入</h4>
             </div>
             <div class="card-body">
                 <form method="POST">
                     <div class="mb-3">
-                        <label for="email" class="form-label">邮箱</label>
+                        <label for="email" class="form-label">電子信箱</label>
                         <input type="email" class="form-control" id="email" name="email" required>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="password" class="form-label">密码</label>
+                        <label for="password" class="form-label">密碼</label>
                         <input type="password" class="form-control" id="password" name="password" required>
                     </div>
                     
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-sign-in-alt"></i> 登录
+                            <i class="fas fa-sign-in-alt"></i> 登入
                         </button>
                     </div>
                 </form>
                 
                 <div class="text-center mt-3">
-                    <p class="mb-0">还没有账号？ 
-                        <a href="{{ url_for('frontend.register') }}" class="text-decoration-none">立即注册</a>
+                    <p class="mb-0">還沒有帳號？ 
+                        <a href="{{ url_for('frontend.register') }}" class="text-decoration-none">立即註冊</a>
                     </p>
                 </div>
             </div>
         </div>
         
-        <!-- 返回首页 -->
+        <!-- 返回首頁 -->
         <div class="text-center mt-3">
             <a href="{{ url_for('frontend.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> 返回首页
+                <i class="fas fa-arrow-left"></i> 返回首頁
             </a>
         </div>
     </div>

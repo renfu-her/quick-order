@@ -5,7 +5,7 @@
 {% block content %}
 <div class="row">
     <div class="col-md-6">
-        <!-- 产品图片 -->
+        <!-- 產品圖片 -->
         <div class="product-images">
             {% set active_images = product.images | selectattr('is_active') | list %}
             {% if active_images %}
@@ -20,11 +20,11 @@
                     {% if active_images|length > 1 %}
                     <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
+                        <span class="visually-hidden">上一張</span>
                     </button>
                     <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
+                        <span class="visually-hidden">下一張</span>
                     </button>
                     {% endif %}
                 </div>
@@ -37,40 +37,40 @@
     </div>
     
     <div class="col-md-6">
-        <!-- 产品信息 -->
+        <!-- 產品資訊 -->
         <div class="product-info">
             <h1 class="product-title mb-3">{{ product.name }}</h1>
             
             {% if product.description %}
-            <p class="product-description text-muted mb-4">{{ product.description }}</p>
+            <p class="product-description text-muted mb-4">{{ product.description or '' }}</p>
             {% endif %}
             
-            <!-- 價格信息 -->
+            <!-- 價格資訊 -->
             <div class="price-info mb-4">
                 <div class="d-flex align-items-center mb-2">
-                    <span class="h3 text-primary me-3">NTD{{ "%.2f"|format(product.price) }}</span>
+                    <span class="h3 text-primary me-3">NTD{{ "%.0f"|format(product.price) }}</span>
                     {% if product.special_price > 0 %}
-                    <span class="h5 text-success">特价: NTD{{ "%.2f"|format(product.special_price) }}</span>
+                    <span class="h5 text-success">特價: NTD{{ "%.0f"|format(product.special_price) }}</span>
                     {% endif %}
                 </div>
                 
                 {% if product.cold_price > 0 or product.hot_price > 0 %}
                 <div class="temperature-prices">
                     {% if product.cold_price > 0 %}
-                    <small class="text-info me-3">冷饮: NTD{{ "%.2f"|format(product.cold_price) }}</small>
+                    <small class="text-info me-3">冷飲: NTD{{ "%.0f"|format(product.cold_price) }}</small>
                     {% endif %}
                     {% if product.hot_price > 0 %}
-                    <small class="text-danger">热饮: NTD{{ "%.2f"|format(product.hot_price) }}</small>
+                    <small class="text-danger">熱飲: NTD{{ "%.0f"|format(product.hot_price) }}</small>
                     {% endif %}
                 </div>
                 {% endif %}
             </div>
             
-            <!-- 配料选择 -->
+            <!-- 配料選擇 -->
             {% set active_ingredients = product.ingredients | selectattr('is_active') | list %}
             {% if active_ingredients %}
             <div class="ingredients mb-4">
-                <h5 class="mb-3">可选配料</h5>
+                <h5 class="mb-3">可選配料</h5>
                 <div class="row">
                     {% for ingredient in active_ingredients %}
                     <div class="col-md-6 mb-2">
@@ -82,7 +82,7 @@
                             <label class="form-check-label" for="ingredient_{{ ingredient.id }}">
                                 {{ ingredient.name }}
                                 {% if ingredient.price > 0 %}
-                                <span class="text-muted">(+NTD{{ "%.2f"|format(ingredient.price) }})</span>
+                                <span class="text-muted">(+NTD{{ "%.0f"|format(ingredient.price) }})</span>
                                 {% endif %}
                             </label>
                         </div>
@@ -92,30 +92,30 @@
             </div>
             {% endif %}
             
-            <!-- 温度选择 -->
+            <!-- 溫度選擇 -->
             {% if product.cold_price > 0 or product.hot_price > 0 %}
             <div class="temperature-selection mb-4">
-                <h5 class="mb-3">温度选择</h5>
+                <h5 class="mb-3">溫度選擇</h5>
                 <div class="btn-group" role="group">
                     <input type="radio" class="btn-check" name="temperature" id="normal" value="normal" checked>
-                    <label class="btn btn-outline-secondary" for="normal">常温</label>
+                    <label class="btn btn-outline-secondary" for="normal">常溫</label>
                     
                     {% if product.cold_price > 0 %}
                     <input type="radio" class="btn-check" name="temperature" id="cold" value="cold">
-                    <label class="btn btn-outline-info" for="cold">冷饮</label>
+                    <label class="btn btn-outline-info" for="cold">冷飲</label>
                     {% endif %}
                     
                     {% if product.hot_price > 0 %}
                     <input type="radio" class="btn-check" name="temperature" id="hot" value="hot">
-                    <label class="btn btn-outline-danger" for="hot">热饮</label>
+                    <label class="btn btn-outline-danger" for="hot">熱飲</label>
                     {% endif %}
                 </div>
             </div>
             {% endif %}
             
-            <!-- 数量选择 -->
+            <!-- 數量選擇 -->
             <div class="quantity-selection mb-4">
-                <h5 class="mb-3">数量</h5>
+                <h5 class="mb-3">數量</h5>
                 <div class="input-group" style="width: 150px;">
                     <button class="btn btn-outline-secondary" type="button" onclick="changeQuantity(-1)">-</button>
                     <input type="number" class="form-control text-center" id="quantity" value="1" min="1" max="10">
@@ -123,20 +123,20 @@
                 </div>
             </div>
             
-            <!-- 操作按钮 -->
+            <!-- 操作按鈕 -->
             <div class="product-actions">
                 <button class="btn btn-primary btn-lg me-3" onclick="addToCartFromDetail({{ product.id }})">
-                    <i class="fas fa-cart-plus"></i> 加入购物车
+                    <i class="fas fa-cart-plus"></i> 加入購物車
                 </button>
                 <a href="{{ url_for('frontend.index') }}" class="btn btn-outline-secondary btn-lg">
-                    <i class="fas fa-arrow-left"></i> 返回首页
+                    <i class="fas fa-arrow-left"></i> 返回首頁
                 </a>
             </div>
             
-            <!-- 實時價格顯示 -->
+            <!-- 即時價格顯示 -->
             <div class="total-price mt-4 p-3 bg-light rounded">
                 <h5 class="mb-0">
-                    总价: <span class="text-primary" id="total-price">NTD{{ "%.2f"|format(product.price) }}</span>
+                    總價: <span class="text-primary" id="total-price">NTD{{ "%.0f"|format(product.price) }}</span>
                 </h5>
             </div>
         </div>
@@ -184,20 +184,20 @@ function updateTotalPrice() {
     
     // 計算總價
     const totalPrice = (price + ingredientPrice) * quantity;
-    document.getElementById('total-price').textContent = 'NTD' + totalPrice.toFixed(2);
+    document.getElementById('total-price').textContent = 'NTD' + totalPrice.toFixed(0);
 }
 
-// 监听温度变化
+// 監聽溫度變化
 document.querySelectorAll('input[name="temperature"]').forEach(radio => {
     radio.addEventListener('change', updateTotalPrice);
 });
 
-// 监听配料变化
+// 監聽配料變化
 document.querySelectorAll('.ingredient-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', updateTotalPrice);
 });
 
-// 监听数量变化
+// 監聽數量變化
 document.getElementById('quantity').addEventListener('input', updateTotalPrice);
 
 function addToCartFromDetail(productId) {
@@ -224,7 +224,7 @@ function addToCartFromDetail(productId) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
-            // 显示成功消息
+            // 顯示成功訊息
             const alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
             alertDiv.style.top = '20px';
@@ -236,24 +236,24 @@ function addToCartFromDetail(productId) {
             `;
             document.body.appendChild(alertDiv);
             
-            // 3秒后自动移除
+            // 3秒後自動移除
             setTimeout(() => {
                 alertDiv.remove();
             }, 3000);
             
-            // 更新购物车数量
+            // 更新購物車數量
             updateCartCount();
         } else {
-            alert('添加失败: ' + data.message);
+            alert('加入失敗: ' + data.message);
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('添加失败，请重试');
+        alert('加入失敗，請重試');
     });
 }
 
-// 更新购物车数量
+// 更新購物車數量
 function updateCartCount() {
     fetch('/api/cart')
         .then(response => response.json())

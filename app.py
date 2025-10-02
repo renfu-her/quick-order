@@ -35,6 +35,15 @@ def create_app(config_name=None):
     app.register_blueprint(backend_bp, url_prefix='/backend')
     app.register_blueprint(api_bp, url_prefix='/api')
     
+    # 自定義 Jinja2 過濾器
+    @app.template_filter('none_to_empty')
+    def none_to_empty(value):
+        """將 None 轉換為空字串"""
+        return value if value is not None else ''
+    
+    # 設置 Jinja2 環境選項
+    app.jinja_env.finalize = lambda x: '' if x is None else x
+    
     # 错误处理
     @app.errorhandler(404)
     def not_found(error):
