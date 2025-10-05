@@ -46,7 +46,18 @@
                                 </p>
                                 {% if item.ingredients %}
                                 <p class="text-muted mb-0 small">
-                                    配料: {{ item.ingredients | map(attribute='name') | join(', ') }}
+                                    配料: 
+                                    {% for ingredient in item.ingredients %}
+                                        {% if ingredient is mapping %}
+                                            {{ ingredient.name }}{% if not loop.last %}, {% endif %}
+                                        {% else %}
+                                            {% for prod_ingredient in item.product.ingredients %}
+                                                {% if prod_ingredient.id == ingredient %}
+                                                    {{ prod_ingredient.name }}{% if not loop.last %}, {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
                                 </p>
                                 {% endif %}
                             </div>
