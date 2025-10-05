@@ -6,7 +6,7 @@ Create database tables and default data
 
 import os
 import sys
-from app import create_app
+from application import create_app
 from database import db
 from models import User, Product, ProductIngredient
 

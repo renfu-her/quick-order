@@ -3,7 +3,7 @@
 Database Test Script for Quick Orders Flask Application
 """
 
-from app import create_app
+from application import create_app
 from database import db
 from models import Product, Store, User
 

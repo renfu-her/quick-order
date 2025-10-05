@@ -52,7 +52,7 @@ The system comes with sample products:
    venv\Scripts\activate
    
    # Start the application
-   python run.py
+   python app.py
    ```
    
    Or use the convenient start script:

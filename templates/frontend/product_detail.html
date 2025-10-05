@@ -48,29 +48,19 @@
             <!-- 價格資訊 -->
             <div class="price-info mb-4">
                 <div class="d-flex align-items-center mb-2">
-                    <span class="h3 text-primary me-3">NTD{{ "%.0f"|format(product.price) }}</span>
+                    <span class="h3 text-primary me-3" id="base-price-display">NTD{{ "%.0f"|format(product.price) }}</span>
                     {% if product.special_price > 0 %}
                     <span class="h5 text-success">特價: NTD{{ "%.0f"|format(product.special_price) }}</span>
                     {% endif %}
                 </div>
-                
-                {% if product.cold_price > 0 or product.hot_price > 0 %}
-                <div class="temperature-prices">
-                    {% if product.cold_price > 0 %}
-                    <small class="text-info me-3">冷飲: NTD{{ "%.0f"|format(product.cold_price) }}</small>
-                    {% endif %}
-                    {% if product.hot_price > 0 %}
-                    <small class="text-danger">熱飲: NTD{{ "%.0f"|format(product.hot_price) }}</small>
-                    {% endif %}
-                </div>
-                {% endif %}
+                <small class="text-muted">基礎價格（根據溫度選擇）</small>
             </div>
             
             <!-- 配料選擇 -->
             {% set active_ingredients = product.ingredients | selectattr('is_active') | list %}
             {% if active_ingredients %}
             <div class="ingredients mb-4">
-                <h5 class="mb-3">可選配料</h5>
+                <h5 class="mb-3">加料選擇 <small class="text-muted">(額外收費)</small></h5>
                 <div class="row">
                     {% for ingredient in active_ingredients %}
                     <div class="col-md-6 mb-2">
@@ -82,7 +72,9 @@
                             <label class="form-check-label" for="ingredient_{{ ingredient.id }}">
                                 {{ ingredient.name }}
                                 {% if ingredient.price > 0 %}
-                                <span class="text-muted">(+NTD{{ "%.0f"|format(ingredient.price) }})</span>
+                                <span class="text-success fw-bold">(+NTD{{ "%.0f"|format(ingredient.price) }})</span>
+                                {% else %}
+                                <span class="text-muted">(免費)</span>
                                 {% endif %}
                             </label>
                         </div>
@@ -98,16 +90,22 @@
                 <h5 class="mb-3">溫度選擇</h5>
                 <div class="btn-group" role="group">
                     <input type="radio" class="btn-check" name="temperature" id="normal" value="normal" checked>
-                    <label class="btn btn-outline-secondary" for="normal">常溫</label>
+                    <label class="btn btn-outline-secondary" for="normal">
+                        <i class="fas fa-thermometer-half me-1"></i>常溫 (NTD{{ "%.0f"|format(product.price) }})
+                    </label>
                     
                     {% if product.cold_price > 0 %}
                     <input type="radio" class="btn-check" name="temperature" id="cold" value="cold">
-                    <label class="btn btn-outline-info" for="cold">冷飲</label>
+                    <label class="btn btn-outline-info" for="cold">
+                        <i class="fas fa-snowflake me-1"></i>冷飲 (NTD{{ "%.0f"|format(product.cold_price) }})
+                    </label>
                     {% endif %}
                     
                     {% if product.hot_price > 0 %}
                     <input type="radio" class="btn-check" name="temperature" id="hot" value="hot">
-                    <label class="btn btn-outline-danger" for="hot">熱飲</label>
+                    <label class="btn btn-outline-danger" for="hot">
+                        <i class="fas fa-fire me-1"></i>熱飲 (NTD{{ "%.0f"|format(product.hot_price) }})
+                    </label>
                     {% endif %}
                 </div>
             </div>
@@ -135,9 +133,27 @@
             
             <!-- 即時價格顯示 -->
             <div class="total-price mt-4 p-3 bg-light rounded">
-                <h5 class="mb-0">
-                    總價: <span class="text-primary" id="total-price">NTD{{ "%.0f"|format(product.price) }}</span>
-                </h5>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>基礎價格:</span>
+                            <span id="base-price-line">NTD{{ "%.0f"|format(product.price) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1" id="ingredient-price-line" style="display: none;">
+                            <span>加料費用:</span>
+                            <span id="ingredient-price-amount">NTD0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>數量:</span>
+                            <span id="quantity-display">1</span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between">
+                            <strong>總價:</strong>
+                            <strong class="text-primary" id="total-price">NTD{{ "%.0f"|format(product.price) }}</strong>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -166,24 +182,42 @@ function updateTotalPrice() {
     const quantity = parseInt(document.getElementById('quantity').value);
     const temperature = document.querySelector('input[name="temperature"]:checked').value;
     
-    // 獲取基礎價格
-    let price = basePrice;
+    // 獲取基礎價格（根據溫度選擇）
+    let basePriceForTemp = basePrice;
     if (temperature === 'cold' && coldPrice > 0) {
-        price = coldPrice;
+        basePriceForTemp = coldPrice;
     } else if (temperature === 'hot' && hotPrice > 0) {
-        price = hotPrice;
+        basePriceForTemp = hotPrice;
     } else if (specialPrice > 0) {
-        price = specialPrice;
+        basePriceForTemp = specialPrice;
     }
     
-    // 計算配料價格
+    // 更新基礎價格顯示
+    document.getElementById('base-price-display').textContent = 'NTD' + basePriceForTemp.toFixed(0);
+    document.getElementById('base-price-line').textContent = 'NTD' + basePriceForTemp.toFixed(0);
+    
+    // 計算配料價格（加料費用）
     let ingredientPrice = 0;
     document.querySelectorAll('.ingredient-checkbox:checked').forEach(checkbox => {
         ingredientPrice += parseFloat(checkbox.dataset.price);
     });
     
+    // 更新加料費用顯示
+    const ingredientPriceLine = document.getElementById('ingredient-price-line');
+    const ingredientPriceAmount = document.getElementById('ingredient-price-amount');
+    
+    if (ingredientPrice > 0) {
+        ingredientPriceLine.style.display = 'flex';
+        ingredientPriceAmount.textContent = 'NTD' + ingredientPrice.toFixed(0);
+    } else {
+        ingredientPriceLine.style.display = 'none';
+    }
+    
+    // 更新數量顯示
+    document.getElementById('quantity-display').textContent = quantity;
+    
     // 計算總價
-    const totalPrice = (price + ingredientPrice) * quantity;
+    const totalPrice = (basePriceForTemp + ingredientPrice) * quantity;
     document.getElementById('total-price').textContent = 'NTD' + totalPrice.toFixed(0);
 }
 
@@ -199,6 +233,11 @@ document.querySelectorAll('.ingredient-checkbox').forEach(checkbox => {
 
 // 監聽數量變化
 document.getElementById('quantity').addEventListener('input', updateTotalPrice);
+
+// 頁面載入時初始化價格顯示
+document.addEventListener('DOMContentLoaded', function() {
+    updateTotalPrice();
+});
 
 function addToCartFromDetail(productId) {
     const quantity = parseInt(document.getElementById('quantity').value);

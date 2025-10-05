@@ -68,7 +68,7 @@ python setup_database.py
 ### Step 7: Start Application
 
 ```bash
-python run.py
+python app.py
 ```
 
 ## 🎯 Access System
@@ -128,7 +128,7 @@ Error: Failed building wheel for [package]
 ```
 Error: Address already in use
 ```
-**Solution**: Change port in `run.py` or kill the process using port 5000
+**Solution**: Change port in `app.py` or kill the process using port 5000
 
 #### 4. Permission Denied
 ```
@@ -167,12 +167,12 @@ After installation, verify the setup:
 
 1. **Check Database Connection**
    ```bash
-   python -c "from app import create_app; from database import db; app = create_app(); print('Database connected:', db.engine.url)"
+   python -c "from application import create_app; from database import db; app = create_app(); print('Database connected:', db.engine.url)"
    ```
 
 2. **Test Application Startup**
    ```bash
-   python run.py
+   python app.py
    # Should show "Quick Orders System Starting..."
    ```
 

@@ -78,7 +78,7 @@ python setup_database.py
 
 ```bash
 # Start development server
-python run.py
+python app.py
 ```
 
 ### 5. Access System
@@ -136,7 +136,7 @@ quick-orders/
 ├── database.py           # Database connection
 ├── requirements.txt      # Python dependencies
 ├── setup_database.py     # Database setup script
-├── run.py               # Startup script
+├── app.py               # Main application entry point
 ├── models/              # Data models
 ├── routes/              # Route handlers
 ├── templates/           # HTML templates

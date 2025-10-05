@@ -54,7 +54,7 @@ Write-Host "Press Ctrl+C to stop the server" -ForegroundColor Yellow
 Write-Host "========================================" -ForegroundColor Green
 
 # Start the Flask application
-python run.py
+python app.py
 
 Write-Host ""
 Write-Host "Server stopped." -ForegroundColor Yellow

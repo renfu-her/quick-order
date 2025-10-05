@@ -30,7 +30,7 @@ def main():
     print(f"Current directory: {current_dir}")
     
     # Check for required files
-    required_files = ['run.py', 'app.py', 'requirements.txt', 'venv']
+    required_files = ['app.py', 'application.py', 'requirements.txt', 'venv']
     print("\nRequired files check:")
     for file in required_files:
         if os.path.exists(file):

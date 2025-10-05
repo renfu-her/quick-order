@@ -56,7 +56,7 @@ mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS \`quick-orders\`;"
 python setup_database.py
 
 # 6. Start application
-python run.py
+python app.py
 ```
 
 ### For Windows Users (Automated):
@@ -113,7 +113,7 @@ rm -rf venv  # or rmdir /s venv on Windows
 ### Application Management
 ```bash
 # Start application (after activation)
-python run.py
+python app.py
 
 # Or use convenience script (Windows)
 start.bat
@@ -137,7 +137,7 @@ After installation, verify the setup:
 
 3. **Test Application**:
    ```bash
-   python run.py
+   python app.py
    # Should start without errors
    ```
 
