@@ -98,7 +98,7 @@ def update_cart_item():
     
     db.session.commit()
     
-    return jsonify({'success': True, 'message': '購物車已更新'})
+    return jsonify({'status': 'success', 'message': '購物車已更新'})
 
 @api_bp.route('/cart/remove', methods=['POST'])
 def remove_from_cart():
@@ -110,7 +110,7 @@ def remove_from_cart():
     db.session.delete(cart_item)
     db.session.commit()
     
-    return jsonify({'success': True, 'message': '已從購物車移除'})
+    return jsonify({'status': 'success', 'message': '已從購物車移除'})
 
 @api_bp.route('/cart')
 def get_cart():

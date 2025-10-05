@@ -30,7 +30,19 @@ class Cart(db.Model):
             # 添加配料價格
             if item.ingredients:
                 for ingredient in item.ingredients:
-                    ingredient_price = float(ingredient.get('price', 0))
+                    if isinstance(ingredient, dict):
+                        # 如果ingredient是字典，直接獲取price
+                        ingredient_price = float(ingredient.get('price', 0))
+                    else:
+                        # 如果ingredient是ID，從product的ingredients中查找
+                        ingredient_id = ingredient
+                        ingredient_obj = None
+                        for prod_ingredient in item.product.ingredients:
+                            if prod_ingredient.id == ingredient_id:
+                                ingredient_obj = prod_ingredient
+                                break
+                        ingredient_price = float(ingredient_obj.price) if ingredient_obj else 0
+                    
                     total += ingredient_price * item.quantity
         return total
     
@@ -74,7 +86,19 @@ class CartItem(db.Model):
         # 添加配料價格
         if self.ingredients:
             for ingredient in self.ingredients:
-                ingredient_price = float(ingredient.get('price', 0))
+                if isinstance(ingredient, dict):
+                    # 如果ingredient是字典，直接獲取price
+                    ingredient_price = float(ingredient.get('price', 0))
+                else:
+                    # 如果ingredient是ID，從product的ingredients中查找
+                    ingredient_id = ingredient
+                    ingredient_obj = None
+                    for prod_ingredient in self.product.ingredients:
+                        if prod_ingredient.id == ingredient_id:
+                            ingredient_obj = prod_ingredient
+                            break
+                    ingredient_price = float(ingredient_obj.price) if ingredient_obj else 0
+                
                 total += ingredient_price * self.quantity
         
         return total
@@ -91,7 +115,19 @@ class CartItem(db.Model):
         ingredient_price = 0
         if self.ingredients:
             for ingredient in self.ingredients:
-                ingredient_price += float(ingredient.get('price', 0))
+                if isinstance(ingredient, dict):
+                    # 如果ingredient是字典，直接獲取price
+                    ingredient_price += float(ingredient.get('price', 0))
+                else:
+                    # 如果ingredient是ID，從product的ingredients中查找
+                    ingredient_id = ingredient
+                    ingredient_obj = None
+                    for prod_ingredient in self.product.ingredients:
+                        if prod_ingredient.id == ingredient_id:
+                            ingredient_obj = prod_ingredient
+                            break
+                    if ingredient_obj:
+                        ingredient_price += float(ingredient_obj.price)
         return base_price + ingredient_price
     
     def set_ingredients(self, ingredients_list):
