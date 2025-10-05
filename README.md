@@ -52,9 +52,10 @@ source venv/Scripts/activate
 # Install Python dependencies
 pip install -r requirements-simple.txt
 
-# Create MySQL database
-mysql -u root -p
-CREATE DATABASE `quick-orders`;
+# (Optional) Create external database
+# By default the app stores data in quick_orders.db (SQLite file)
+# mysql -u root -p
+# CREATE DATABASE `quick-orders`;
 ```
 
 ### 2. Configure Environment
@@ -64,6 +65,7 @@ CREATE DATABASE `quick-orders`;
 cp env.example .env
 
 # Edit configuration file if needed
+# Leave DATABASE_URL empty to use the bundled SQLite database
 # DATABASE_URL=mysql+pymysql://root:password@localhost/quick-orders
 ```
 
