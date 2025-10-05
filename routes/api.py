@@ -81,7 +81,7 @@ def add_to_cart():
     
     db.session.commit()
     
-    return jsonify({'success': True, 'message': '已添加到購物車'})
+    return jsonify({'status': 'success', 'message': '已添加到購物車'})
 
 @api_bp.route('/cart/update', methods=['POST'])
 def update_cart_item():
